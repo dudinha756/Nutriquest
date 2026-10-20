@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { neon, authClient } from "../lib/neon";
+import { authClient } from "../lib/neon";
 
 type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number};
 type Reward={id:number;name:string;cost:number};
@@ -38,10 +38,11 @@ function Dashboard({ user }: { user: Profile }){
  useEffect(()=>{
   let cancelled=false;
   async function loadProfile(){
-   const {data,error}=await neon.from("nutriquest_state").select("data").eq("user_id",user.id).maybeSingle();
+   const response = await fetch("/api/state", { credentials: "same-origin", cache: "no-store" });
+   const body = await response.json() as { data?: Partial<SavedState> | null; error?: string };
    if(cancelled)return;
-   if(error)throw new Error(error.message);
-   const saved=(data as {data?:Partial<SavedState>} | null)?.data;
+   if(!response.ok)throw new Error(body.error||"Não foi possível consultar seus dados.");
+   const saved=body.data;
    if(saved){
     if(Array.isArray(saved.meals))setMeals(saved.meals);
     if(typeof saved.water==="number")setWater(saved.water);
@@ -61,12 +62,21 @@ function Dashboard({ user }: { user: Profile }){
  useEffect(()=>{
   if(!loaded)return;
   const timer=setTimeout(async()=>{
-   const {error}=await neon.from("nutriquest_state").upsert({
-    user_id:user.id,
-    data:{meals,water,xp,coins,streak,rewards},
-    updated_at:new Date().toISOString(),
-   },{onConflict:"user_id"});
-   setSaveError(error?("Não foi possível salvar: "+error.message):"");
+   try {
+    const response = await fetch("/api/state", {
+     method:"PUT",
+     credentials:"same-origin",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({meals,water,xp,coins,streak,rewards}),
+    });
+    if(!response.ok){
+     const body=await response.json().catch(()=>({error:"Falha na conexão com o servidor."})) as {error?:string};
+     throw new Error(body.error||"Não foi possível salvar.");
+    }
+    setSaveError("");
+   }catch(err){
+    setSaveError(err instanceof Error?err.message:"Não foi possível salvar seus dados.");
+   }
   },700);
   return ()=>clearTimeout(timer);
  },[loaded,user.id,meals,water,xp,coins,streak,rewards]);
