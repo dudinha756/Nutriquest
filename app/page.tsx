@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { neon } from "../lib/neon";
+import { authClient } from "../lib/neon";
 
 type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number};
 type Reward={id:number;name:string;cost:number};
@@ -38,10 +38,11 @@ function Dashboard({ user }: { user: Profile }){
  useEffect(()=>{
   let cancelled=false;
   async function loadProfile(){
-   const {data,error}=await neon.from("nutriquest_state").select("data").eq("user_id",user.id).maybeSingle();
+   const response = await fetch("/api/state", { credentials: "same-origin", cache: "no-store" });
+   const body = await response.json() as { data?: Partial<SavedState> | null; error?: string };
    if(cancelled)return;
-   if(error)throw new Error(error.message);
-   const saved=(data as {data?:Partial<SavedState>} | null)?.data;
+   if(!response.ok)throw new Error(body.error||"Não foi possível consultar seus dados.");
+   const saved=body.data;
    if(saved){
     if(Array.isArray(saved.meals))setMeals(saved.meals);
     if(typeof saved.water==="number")setWater(saved.water);
@@ -61,12 +62,21 @@ function Dashboard({ user }: { user: Profile }){
  useEffect(()=>{
   if(!loaded)return;
   const timer=setTimeout(async()=>{
-   const {error}=await neon.from("nutriquest_state").upsert({
-    user_id:user.id,
-    data:{meals,water,xp,coins,streak,rewards},
-    updated_at:new Date().toISOString(),
-   },{onConflict:"user_id"});
-   setSaveError(error?("Não foi possível salvar: "+error.message):"");
+   try {
+    const response = await fetch("/api/state", {
+     method:"PUT",
+     credentials:"same-origin",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({meals,water,xp,coins,streak,rewards}),
+    });
+    if(!response.ok){
+     const body=await response.json().catch(()=>({error:"Falha na conexão com o servidor."})) as {error?:string};
+     throw new Error(body.error||"Não foi possível salvar.");
+    }
+    setSaveError("");
+   }catch(err){
+    setSaveError(err instanceof Error?err.message:"Não foi possível salvar seus dados.");
+   }
   },700);
   return ()=>clearTimeout(timer);
  },[loaded,user.id,meals,water,xp,coins,streak,rewards]);
@@ -118,7 +128,7 @@ function Dashboard({ user }: { user: Profile }){
    <div className="brand"><div>🥗</div><span><b>NutriQuest</b><small>consistência que recompensa</small></span></div>
    {["Hoje","Minha dieta","Progresso","Recompensas"].map(i=><button key={i} onClick={()=>setTab(i)} className={tab===i?"active":""}>{i}</button>)}
    <div className="sidebox"><b>🔥 {streak} dias</b><span>Sua sequência atual</span></div>
-   <button className="logout" onClick={()=>{void neon.auth.signOut()}}>Sair da conta</button>
+   <button className="logout" onClick={()=>{void authClient.signOut()}}>Sair da conta</button>
   </aside>
 
   <section className="content">
@@ -171,10 +181,19 @@ function AuthScreen(){
   setBusy(true);setError("");setNotice("");
   try{
    const result=createAccount
-    ?await neon.auth.signUp.email({name:name.trim(),email:email.trim().toLowerCase(),password})
-    :await neon.auth.signIn.email({email:email.trim().toLowerCase(),password});
+    ?await authClient.signUp.email({name:name.trim(),email:email.trim().toLowerCase(),password})
+    :await authClient.signIn.email({email:email.trim().toLowerCase(),password});
    if(result.error)throw new Error(result.error.message||"Não foi possível entrar.");
-   if(createAccount)setNotice("Cadastro realizado! Caso seja necessário, confirme seu e-mail para acessar a conta.");
+   if(createAccount){
+    setNotice("Cadastro realizado! Caso seja necessário, confirme seu e-mail para acessar a conta.");
+   }else{
+    // Do not silently return to a blank login form if Safari rejects the session.
+    const verified=await authClient.getSession();
+    if(!verified.data?.user){
+     throw new Error("Não foi possível manter sua sessão. Abra o aplicativo pelo Safari e tente novamente.");
+    }
+    window.location.reload();
+   }
   }catch(err){setError(err instanceof Error?err.message:"Ocorreu um erro. Tente novamente.")}
   finally{setBusy(false)}
  };
@@ -201,7 +220,7 @@ function AuthScreen(){
 }
 
 export default function Home(){
- const {data:session,isPending}=neon.auth.useSession();
+ const {data:session,isPending}=authClient.useSession();
  if(isPending)return <main className="authscreen"><div className="authcard">Verificando sua sessão...</div></main>;
  if(!session?.user)return <AuthScreen/>;
  return <Dashboard key={session.user.id} user={session.user}/>;
