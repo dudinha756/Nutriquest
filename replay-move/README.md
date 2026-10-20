@@ -1,44 +1,18 @@
-# RE:PLAY Move — MVP
+# RE:PLAY Move
 
-**RE:PLAY Move** explores one core hypothesis: people may be more willing to move consistently when movement is shaped around how they feel, how they want to feel, the time they have and the soundtrack they enjoy.
+MVP focused on one hypothesis: movement can become easier to repeat when the experience starts with how a person feels and how they want to feel.
 
-## MVP flow
-1. Current feeling
-2. Desired feeling
-3. Movement mode
-4. Available time
-5. Intensity
-6. Soundtrack vibe
-7. Generated RE:PLAY session
-8. Post-session feeling feedback
+## Current scope
+- bilingual PT/EN
+- mood-to-movement session builder
+- local user profile
+- completed-session history
+- progressive recommendations from real usage patterns
+- Spotify / YouTube Music handoff
+- optional personal playlist
+- post-session feeling feedback
+- responsive mobile-first UI
 
-The MVP intentionally does **not** provide diagnosis, treatment, calorie targets or medical recommendations.
+Food, calorie targets, diagnosis and treatment are intentionally outside this MVP.
 
-## Local development
-```bash
-npm install
-npm run dev
-```
-
-## Build
-```bash
-npm run build
-```
-
-## Product principles
-- movement before metrics
-- personalization before punishment
-- play before perfection
-- inclusive defaults
-- music as experience, not as unlicensed hosted content
-- validate behavior before expanding feature scope
-
-## Next validation step
-Test the prototype with a small target segment and compare:
-- session start rate
-- completion rate
-- post-session affect
-- intention to repeat
-- preferred movement/music combinations
-
-Built as an isolated MVP branch for concept validation.
+Profile and history currently use localStorage. Authentication and database persistence are a later stage after behavioral validation.
