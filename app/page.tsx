@@ -86,6 +86,7 @@ function Dashboard({ user }: { user: Profile }){
  const [loadError,setLoadError]=useState("");
  const [saveError,setSaveError]=useState("");
  const [hasLegacy,setHasLegacy]=useState(false);
+ const [mealEditor,setMealEditor]=useState<MealEditorMode|null>(null);
 
  useEffect(()=>{
   let cancelled=false;
@@ -170,7 +171,27 @@ function Dashboard({ user }: { user: Profile }){
   if(coins<r.cost)return;
   if(confirm(`Resgatar "${r.name}" por ${r.cost} NutriCoins?`))setCoins(c=>c-r.cost);
  };
- const next=useMemo(()=>meals.find(m=>!m.done),[meals]);
+
+ const orderedMeals=useMemo(()=>[...meals].sort((a,b)=>a.time.localeCompare(b.time)),[meals]);
+ const next=useMemo(()=>orderedMeals.find(m=>!m.done),[orderedMeals]);
+ const saveMeal=(details:MealDetails)=>{
+  if(mealEditor?.mode==="edit"){
+   const id=mealEditor.meal.id;
+   setMeals(current=>current.map(meal=>meal.id===id?{...meal,...details}:meal));
+  }else{
+   const id=Math.max(Date.now(),...meals.map(meal=>meal.id+1));
+   setMeals(current=>[...current,{id,...details,done:false,xp:10}]);
+  }
+  setMealEditor(null);
+ };
+ const deleteMeal=(meal:Meal)=>{
+  if(!confirm('Excluir a refeição "'+meal.name+'"? Esta ação não pode ser desfeita.'))return;
+  setMeals(current=>current.filter(m=>m.id!==meal.id));
+  if(meal.done){
+   setXp(current=>Math.max(0,current-meal.xp));
+   setCoins(current=>Math.max(0,current-5));
+  }
+ };
 
  if(loadError)return <div className="authscreen"><div className="authcard"><h2>Não foi possível carregar sua conta</h2><p>{loadError}</p><button className="authsubmit" onClick={()=>window.location.reload()}>Tentar novamente</button></div></div>;
  if(!loaded)return <div className="authscreen"><div className="authcard">Carregando seus dados...</div></div>;
@@ -215,6 +236,7 @@ function Dashboard({ user }: { user: Profile }){
 
    {tab==="Recompensas"&&<div className="page"><div className="rewardhero"><div><small>CARTEIRA</small><h2>{coins} NutriCoins</h2><p>Transforme hábitos consistentes em recompensas escolhidas por você.</p></div><span>🪙</span></div><div className="intro horizontal"><div><h2>Suas recompensas</h2><p>Cadastre coisas que realmente motivam você.</p></div><button className="primary" onClick={addReward}>+ Nova recompensa</button></div><div className="rewardgrid">{rewards.map(r=><article className="card reward" key={r.id}><span>🎁</span><h3>{r.name}</h3><p>{r.cost} NutriCoins</p><button disabled={coins<r.cost} onClick={()=>redeem(r)}>{coins>=r.cost?"Resgatar":"Saldo insuficiente"}</button></article>)}</div></div>}
   </section>
+  {mealEditor&&<MealEditor key={mealEditor.mode==="edit"?mealEditor.meal.id:"new"} editor={mealEditor} onSave={saveMeal} onClose={()=>setMealEditor(null)}/>}
  </main>
 }
 
