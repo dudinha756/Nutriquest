@@ -211,7 +211,7 @@ function Dashboard({ user }: { user: Profile }){
 
    {tab==="Hoje"&&<>
     <div className="hero">
-     <div><span className="tag">🔥 sequência de {streak} dias</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
+     <div><span className="tag">🔥 sequência de {streak} dias</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{meals.length===0?<>Crie seu primeiro bloco de refeição para começar.</>:next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
      <div className="circle" style={{background:`conic-gradient(#ddeaaf ${percent*3.6}deg,#ffffff24 0)`}}><div><b>{percent}%</b><span>da dieta</span></div></div>
     </div>
 
@@ -223,8 +223,16 @@ function Dashboard({ user }: { user: Profile }){
     </div>
 
     <div className="grid">
-     <article className="card meals"><div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
-      {meals.map(m=><button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} key={m.id}><i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em></button>)}
+     <article className="card meals">
+      <div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
+      {orderedMeals.length===0&&<p className="empty-meals">Nenhuma refeição cadastrada. Adicione seu primeiro bloco!</p>}
+      {orderedMeals.map(m=><div className="meal-line" key={m.id}>
+       <button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} aria-label={(m.done?"Desmarcar ":"Marcar como concluída: ")+m.name}>
+        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em>
+       </button>
+       <button className="meal-quick-edit" type="button" aria-label={"Editar "+m.name} onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
+      </div>)}
+      <button className="meal-add-inline" type="button" onClick={()=>setMealEditor({mode:"new"})}>+ Adicionar refeição</button>
      </article>
      <article className="card"><small>HIDRATAÇÃO</small><h3>Água do dia</h3><div className="water"><b>{water}</b><span>/ 2500 ml</span></div><div className="bar"><i style={{width:`${Math.min(100,water/25)}%`}}/></div><div className="actions"><button onClick={()=>addWater(-250)}>−250</button><button onClick={()=>addWater(250)}>+250 ml</button><button onClick={()=>addWater(500)}>+500 ml</button></div></article>
     </div>
