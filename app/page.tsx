@@ -184,6 +184,16 @@ function Dashboard({ user }: { user: Profile }){
 
  const orderedMeals=useMemo(()=>[...meals].sort((a,b)=>a.time.localeCompare(b.time)),[meals]);
  const next=useMemo(()=>orderedMeals.find(m=>!m.done),[orderedMeals]);
+ const dailyNutrition=useMemo(()=>{
+  const calculated=meals.filter(m=>(m.foods?.length??0)>0);
+  const summaries=calculated.map(m=>({meal:m,values:mealNutrition(m.foods)}));
+  return {
+   planned:summaries.reduce((sum,a)=>sum+a.values.kcal,0),
+   completed:summaries.filter(a=>a.meal.done).reduce((sum,a)=>sum+a.values.kcal,0),
+   calculated:calculated.length,
+   missing:summaries.some(a=>a.values.missingKcal),
+  };
+ },[meals]);
  const saveMeal=(details:MealDetails)=>{
   if(mealEditor?.mode==="edit"){
    const id=mealEditor.meal.id;
@@ -232,13 +242,21 @@ function Dashboard({ user }: { user: Profile }){
      <article><span>🪙</span><div><small>NutriCoins</small><b>{coins}</b></div></article>
     </div>
 
+    <div className="nutrition-day">
+     <div><small>ENERGIA DAS REFEIÇÕES TACO</small><h3>{dailyNutrition.calculated>0?ptNumber(dailyNutrition.planned)+" kcal":"Adicione alimentos TACO"}</h3>
+      <span>Energia planejada {dailyNutrition.missing?"(incompleta)":""}</span></div>
+     <div><small>ENERGIA CONCLUÍDA</small><h3>{ptNumber(dailyNutrition.completed)} kcal</h3><span>Das refeições marcadas como feitas</span></div>
+     <p>{dailyNutrition.calculated} de {meals.length} refeições têm alimentos da TACO registrados. Os demais blocos não entram nos totais calóricos. Valores estimados por 100 g de parte comestível.</p>
+    </div>
     <div className="grid">
      <article className="card meals">
       <div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
       {orderedMeals.length===0&&<p className="empty-meals">Nenhuma refeição cadastrada. Adicione seu primeiro bloco!</p>}
       {orderedMeals.map(m=><div className="meal-line" key={m.id}>
        <button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} aria-label={(m.done?"Desmarcar ":"Marcar como concluída: ")+m.name}>
-        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em>
+        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span>
+         {(m.foods?.length??0)>0&&<small className="meal-kcal">{mealNutrition(m.foods).missingKcal?"Kcal não disponíveis":ptNumber(mealNutrition(m.foods).kcal)+" kcal pela TACO"}</small>}
+        </div><em>+{m.xp} XP</em>
        </button>
        <button className="meal-quick-edit" type="button" aria-label={"Editar "+m.name} onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
       </div>)}
@@ -256,7 +274,9 @@ function Dashboard({ user }: { user: Profile }){
     {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
     {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
      <strong>{String(i+1).padStart(2,"0")}</strong>
-     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p></div>
+     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p>
+      {(m.foods?.length??0)>0&&<p className="diet-kcal">{mealNutrition(m.foods).missingKcal?"Energia incompleta":ptNumber(mealNutrition(m.foods).kcal)+" kcal"} · {m.foods?.length} alimentos TACO</p>}
+     </div>
      <div className="dietrow-actions">
       <button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button>
       <button className="edit-action" onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
