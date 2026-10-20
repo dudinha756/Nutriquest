@@ -238,7 +238,22 @@ function Dashboard({ user }: { user: Profile }){
     </div>
    </>}
 
-   {tab==="Minha dieta"&&<div className="page"><div className="intro"><small>PLANEJAMENTO</small><h2>Sua dieta</h2><p>Marque o que foi cumprido e mantenha o foco no processo.</p></div>{meals.map((m,i)=><article className="dietrow" key={m.id}><strong>{String(i+1).padStart(2,"0")}</strong><div><h3>{m.name}</h3><p>{m.time} · {m.items}</p></div><button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button></article>)}</div>}
+   {tab==="Minha dieta"&&<div className="page">
+    <div className="diet-heading">
+     <div className="intro"><small>PLANEJAMENTO</small><h2>Sua dieta</h2><p>Adicione, edite e organize seus blocos por horário.</p></div>
+     <button className="primary" onClick={()=>setMealEditor({mode:"new"})}>+ Nova refeição</button>
+    </div>
+    {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
+    {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
+     <strong>{String(i+1).padStart(2,"0")}</strong>
+     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p></div>
+     <div className="dietrow-actions">
+      <button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button>
+      <button className="edit-action" onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
+      <button className="delete-action" onClick={()=>deleteMeal(m)}>Excluir</button>
+     </div>
+    </article>)}
+   </div>}
 
    {tab==="Progresso"&&<div className="page"><div className="intro"><small>EVOLUÇÃO</small><h2>Seu progresso</h2><p>Consistência vale mais que perfeição.</p></div><div className="stats"><article><span>🎯</span><div><small>Adesão hoje</small><b>{percent}%</b></div></article><article><span>🔥</span><div><small>Sequência</small><b>{streak} dias</b></div></article><article><span>⚡</span><div><small>XP total</small><b>{xp}</b></div></article><article><span>🏆</span><div><small>Nível</small><b>{level}</b></div></article></div><article className="card progressCard"><h3>Meta semanal</h3><p>Complete pelo menos 90% da dieta em 5 dias.</p><div className="week">{[78,92,66,100,84,94,percent].map((v,i)=><div key={i}><i><span style={{height:`${v}%`}}/></i><small>{["S","T","Q","Q","S","S","H"][i]}</small></div>)}</div></article></div>}
 
