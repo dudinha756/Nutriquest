@@ -22,6 +22,58 @@ const initialRewards:Reward[]=[
 type Profile = { id: string; name?: string | null; email: string };
 type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
 
+
+type MealDetails=Pick<Meal,"name"|"time"|"items">;
+type MealEditorMode={mode:"new"}|{mode:"edit";meal:Meal};
+
+function MealEditor({editor,onSave,onClose}:{
+ editor:MealEditorMode;
+ onSave:(details:MealDetails)=>void;
+ onClose:()=>void;
+}){
+ const current=editor.mode==="edit"?editor.meal:null;
+ const [name,setName]=useState(current?.name??"");
+ const [time,setTime]=useState(current?.time??"12:00");
+ const [items,setItems]=useState(current?.items??"");
+ useEffect(()=>{
+  const handleKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};
+  window.addEventListener("keydown",handleKey);
+  return ()=>window.removeEventListener("keydown",handleKey);
+ },[onClose]);
+ const submit=(e:FormEvent<HTMLFormElement>)=>{
+  e.preventDefault();
+  const details={name:name.trim(),time,items:items.trim()};
+  if(!details.name||!details.time||!details.items)return;
+  onSave(details);
+ };
+ return <div className="meal-modal-backdrop">
+  <section className="meal-modal" role="dialog" aria-modal="true" aria-labelledby="meal-editor-heading">
+   <div className="meal-modal-title">
+    <div><small>{current?"EDITAR REFEIÇÃO":"PERSONALIZAR DIETA"}</small>
+     <h2 id="meal-editor-heading">{current?"Editar refeição":"Nova refeição"}</h2>
+    </div>
+    <button type="button" className="meal-modal-close" onClick={onClose} aria-label="Fechar editor">×</button>
+   </div>
+   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco.</p>
+   <form className="meal-form" onSubmit={submit}>
+    <label>Nome da refeição
+     <input autoFocus required maxLength={70} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: Ceia, Pré-treino..." />
+    </label>
+    <label>Horário
+     <input type="time" required value={time} onChange={e=>setTime(e.target.value)}/>
+    </label>
+    <label>Alimentos / descrição
+     <textarea required maxLength={500} rows={4} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: Iogurte natural, banana e aveia"/>
+    </label>
+    <div className="meal-modal-actions">
+     <button type="button" className="meal-cancel" onClick={onClose}>Cancelar</button>
+     <button type="submit" className="primary" disabled={!name.trim()||!items.trim()||!time}>{current?"Salvar alterações":"Criar refeição"}</button>
+    </div>
+   </form>
+  </section>
+ </div>;
+}
+
 function Dashboard({ user }: { user: Profile }){
  const [meals,setMeals]=useState<Meal[]>(initialMeals.map(m=>({...m,done:false})));
  const [water,setWater]=useState(0);
