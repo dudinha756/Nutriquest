@@ -41,7 +41,7 @@ export default function NutritionPicker({value,onChange}:Props){
   </div>
   <div className="taco-filters">
    <label>Pesquisar alimento
-    <input type="search" value={search} onChange={e=>{setSearch(e.target.value);setActiveFood(null)}} placeholder="Ex.: arroz, frango, banana..." />
+    <input type="search" value={search} onKeyDown={e=>{if(e.key==="Enter")e.preventDefault()}} onChange={e=>{setSearch(e.target.value);setActiveFood(null)}} placeholder="Ex.: arroz, frango, banana..." />
    </label>
    <label>Categoria
     <select value={category} onChange={e=>{setCategory(e.target.value);setActiveFood(null)}}>
