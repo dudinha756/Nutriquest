@@ -25,6 +25,10 @@ type Profile = { id: string; name?: string | null; email: string };
 type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
 
 
+const mealFoodSummary=(meal:Meal)=>{
+ if(!meal.foods?.length)return meal.items;
+ return meal.foods.map(portion=>(tacoFoodById.get(portion.foodId)?.name??"Alimento")+" ("+ptNumber(portion.grams)+" g)").join(" • ");
+};
 type MealDetails=Pick<Meal,"name"|"time"|"items"|"foods">;
 type MealEditorMode={mode:"new"}|{mode:"edit";meal:Meal};
 
@@ -47,11 +51,7 @@ function MealEditor({editor,onSave,onClose}:{
   e.preventDefault();
   const valid=foods.length===0||foods.every(f=>Number.isFinite(f.grams)&&f.grams>0&&f.grams<=3000&&tacoFoodById.has(f.foodId));
   if(!valid)return;
-  const label=foods.map(f=>{
-   const food=tacoFoodById.get(f.foodId);
-   return (food?.name??"Alimento")+" ("+ptNumber(f.grams)+" g)";
-  }).join(" • ");
-  const details={name:name.trim(),time,items:items.trim()||label.slice(0,500),foods};
+  const details={name:name.trim(),time,items:items.trim(),foods};
   if(!details.name||!details.time||(!details.items&&foods.length===0))return;
   onSave(details);
  };
@@ -254,7 +254,8 @@ function Dashboard({ user }: { user: Profile }){
       {orderedMeals.length===0&&<p className="empty-meals">Nenhuma refeição cadastrada. Adicione seu primeiro bloco!</p>}
       {orderedMeals.map(m=><div className="meal-line" key={m.id}>
        <button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} aria-label={(m.done?"Desmarcar ":"Marcar como concluída: ")+m.name}>
-        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span>
+        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {mealFoodSummary(m)}</span>
+         {(m.foods?.length??0)>0&&m.items&&<small className="meal-note">{m.items}</small>}
          {(m.foods?.length??0)>0&&<small className="meal-kcal">{mealNutrition(m.foods).missingKcal?"Kcal não disponíveis":ptNumber(mealNutrition(m.foods).kcal)+" kcal pela TACO"}</small>}
         </div><em>+{m.xp} XP</em>
        </button>
@@ -274,7 +275,8 @@ function Dashboard({ user }: { user: Profile }){
     {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
     {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
      <strong>{String(i+1).padStart(2,"0")}</strong>
-     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p>
+     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {mealFoodSummary(m)}</p>
+      {(m.foods?.length??0)>0&&m.items&&<p className="meal-note">{m.items}</p>}
       {(m.foods?.length??0)>0&&<p className="diet-kcal">{mealNutrition(m.foods).missingKcal?"Energia incompleta":ptNumber(mealNutrition(m.foods).kcal)+" kcal"} · {m.foods?.length} alimentos TACO</p>}
      </div>
      <div className="dietrow-actions">
