@@ -142,3 +142,5 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
  .nutrition-day h3{font-size:17px}
  .taco-result{align-items:flex-start}
 }
+
+.meal-note{display:block;color:#708478!important;font-size:11px!important;font-weight:400;line-height:1.5;margin-top:4px;overflow-wrap:anywhere}
