@@ -22,6 +22,58 @@ const initialRewards:Reward[]=[
 type Profile = { id: string; name?: string | null; email: string };
 type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
 
+
+type MealDetails=Pick<Meal,"name"|"time"|"items">;
+type MealEditorMode={mode:"new"}|{mode:"edit";meal:Meal};
+
+function MealEditor({editor,onSave,onClose}:{
+ editor:MealEditorMode;
+ onSave:(details:MealDetails)=>void;
+ onClose:()=>void;
+}){
+ const current=editor.mode==="edit"?editor.meal:null;
+ const [name,setName]=useState(current?.name??"");
+ const [time,setTime]=useState(current?.time??"12:00");
+ const [items,setItems]=useState(current?.items??"");
+ useEffect(()=>{
+  const handleKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};
+  window.addEventListener("keydown",handleKey);
+  return ()=>window.removeEventListener("keydown",handleKey);
+ },[onClose]);
+ const submit=(e:FormEvent<HTMLFormElement>)=>{
+  e.preventDefault();
+  const details={name:name.trim(),time,items:items.trim()};
+  if(!details.name||!details.time||!details.items)return;
+  onSave(details);
+ };
+ return <div className="meal-modal-backdrop">
+  <section className="meal-modal" role="dialog" aria-modal="true" aria-labelledby="meal-editor-heading">
+   <div className="meal-modal-title">
+    <div><small>{current?"EDITAR REFEIÇÃO":"PERSONALIZAR DIETA"}</small>
+     <h2 id="meal-editor-heading">{current?"Editar refeição":"Nova refeição"}</h2>
+    </div>
+    <button type="button" className="meal-modal-close" onClick={onClose} aria-label="Fechar editor">×</button>
+   </div>
+   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco.</p>
+   <form className="meal-form" onSubmit={submit}>
+    <label>Nome da refeição
+     <input autoFocus required maxLength={70} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: Ceia, Pré-treino..." />
+    </label>
+    <label>Horário
+     <input type="time" required value={time} onChange={e=>setTime(e.target.value)}/>
+    </label>
+    <label>Alimentos / descrição
+     <textarea required maxLength={500} rows={4} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: Iogurte natural, banana e aveia"/>
+    </label>
+    <div className="meal-modal-actions">
+     <button type="button" className="meal-cancel" onClick={onClose}>Cancelar</button>
+     <button type="submit" className="primary" disabled={!name.trim()||!items.trim()||!time}>{current?"Salvar alterações":"Criar refeição"}</button>
+    </div>
+   </form>
+  </section>
+ </div>;
+}
+
 function Dashboard({ user }: { user: Profile }){
  const [meals,setMeals]=useState<Meal[]>(initialMeals.map(m=>({...m,done:false})));
  const [water,setWater]=useState(0);
@@ -34,6 +86,7 @@ function Dashboard({ user }: { user: Profile }){
  const [loadError,setLoadError]=useState("");
  const [saveError,setSaveError]=useState("");
  const [hasLegacy,setHasLegacy]=useState(false);
+ const [mealEditor,setMealEditor]=useState<MealEditorMode|null>(null);
 
  useEffect(()=>{
   let cancelled=false;
@@ -118,7 +171,27 @@ function Dashboard({ user }: { user: Profile }){
   if(coins<r.cost)return;
   if(confirm(`Resgatar "${r.name}" por ${r.cost} NutriCoins?`))setCoins(c=>c-r.cost);
  };
- const next=useMemo(()=>meals.find(m=>!m.done),[meals]);
+
+ const orderedMeals=useMemo(()=>[...meals].sort((a,b)=>a.time.localeCompare(b.time)),[meals]);
+ const next=useMemo(()=>orderedMeals.find(m=>!m.done),[orderedMeals]);
+ const saveMeal=(details:MealDetails)=>{
+  if(mealEditor?.mode==="edit"){
+   const id=mealEditor.meal.id;
+   setMeals(current=>current.map(meal=>meal.id===id?{...meal,...details}:meal));
+  }else{
+   const id=Math.max(Date.now(),...meals.map(meal=>meal.id+1));
+   setMeals(current=>[...current,{id,...details,done:false,xp:10}]);
+  }
+  setMealEditor(null);
+ };
+ const deleteMeal=(meal:Meal)=>{
+  if(!confirm('Excluir a refeição "'+meal.name+'"? Esta ação não pode ser desfeita.'))return;
+  setMeals(current=>current.filter(m=>m.id!==meal.id));
+  if(meal.done){
+   setXp(current=>Math.max(0,current-meal.xp));
+   setCoins(current=>Math.max(0,current-5));
+  }
+ };
 
  if(loadError)return <div className="authscreen"><div className="authcard"><h2>Não foi possível carregar sua conta</h2><p>{loadError}</p><button className="authsubmit" onClick={()=>window.location.reload()}>Tentar novamente</button></div></div>;
  if(!loaded)return <div className="authscreen"><div className="authcard">Carregando seus dados...</div></div>;
@@ -138,7 +211,7 @@ function Dashboard({ user }: { user: Profile }){
 
    {tab==="Hoje"&&<>
     <div className="hero">
-     <div><span className="tag">🔥 sequência de {streak} dias</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
+     <div><span className="tag">🔥 sequência de {streak} dias</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{meals.length===0?<>Crie seu primeiro bloco de refeição para começar.</>:next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
      <div className="circle" style={{background:`conic-gradient(#ddeaaf ${percent*3.6}deg,#ffffff24 0)`}}><div><b>{percent}%</b><span>da dieta</span></div></div>
     </div>
 
@@ -150,19 +223,43 @@ function Dashboard({ user }: { user: Profile }){
     </div>
 
     <div className="grid">
-     <article className="card meals"><div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
-      {meals.map(m=><button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} key={m.id}><i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em></button>)}
+     <article className="card meals">
+      <div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
+      {orderedMeals.length===0&&<p className="empty-meals">Nenhuma refeição cadastrada. Adicione seu primeiro bloco!</p>}
+      {orderedMeals.map(m=><div className="meal-line" key={m.id}>
+       <button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} aria-label={(m.done?"Desmarcar ":"Marcar como concluída: ")+m.name}>
+        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em>
+       </button>
+       <button className="meal-quick-edit" type="button" aria-label={"Editar "+m.name} onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
+      </div>)}
+      <button className="meal-add-inline" type="button" onClick={()=>setMealEditor({mode:"new"})}>+ Adicionar refeição</button>
      </article>
      <article className="card"><small>HIDRATAÇÃO</small><h3>Água do dia</h3><div className="water"><b>{water}</b><span>/ 2500 ml</span></div><div className="bar"><i style={{width:`${Math.min(100,water/25)}%`}}/></div><div className="actions"><button onClick={()=>addWater(-250)}>−250</button><button onClick={()=>addWater(250)}>+250 ml</button><button onClick={()=>addWater(500)}>+500 ml</button></div></article>
     </div>
    </>}
 
-   {tab==="Minha dieta"&&<div className="page"><div className="intro"><small>PLANEJAMENTO</small><h2>Sua dieta</h2><p>Marque o que foi cumprido e mantenha o foco no processo.</p></div>{meals.map((m,i)=><article className="dietrow" key={m.id}><strong>{String(i+1).padStart(2,"0")}</strong><div><h3>{m.name}</h3><p>{m.time} · {m.items}</p></div><button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button></article>)}</div>}
+   {tab==="Minha dieta"&&<div className="page">
+    <div className="diet-heading">
+     <div className="intro"><small>PLANEJAMENTO</small><h2>Sua dieta</h2><p>Adicione, edite e organize seus blocos por horário.</p></div>
+     <button className="primary" onClick={()=>setMealEditor({mode:"new"})}>+ Nova refeição</button>
+    </div>
+    {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
+    {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
+     <strong>{String(i+1).padStart(2,"0")}</strong>
+     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p></div>
+     <div className="dietrow-actions">
+      <button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button>
+      <button className="edit-action" onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
+      <button className="delete-action" onClick={()=>deleteMeal(m)}>Excluir</button>
+     </div>
+    </article>)}
+   </div>}
 
    {tab==="Progresso"&&<div className="page"><div className="intro"><small>EVOLUÇÃO</small><h2>Seu progresso</h2><p>Consistência vale mais que perfeição.</p></div><div className="stats"><article><span>🎯</span><div><small>Adesão hoje</small><b>{percent}%</b></div></article><article><span>🔥</span><div><small>Sequência</small><b>{streak} dias</b></div></article><article><span>⚡</span><div><small>XP total</small><b>{xp}</b></div></article><article><span>🏆</span><div><small>Nível</small><b>{level}</b></div></article></div><article className="card progressCard"><h3>Meta semanal</h3><p>Complete pelo menos 90% da dieta em 5 dias.</p><div className="week">{[78,92,66,100,84,94,percent].map((v,i)=><div key={i}><i><span style={{height:`${v}%`}}/></i><small>{["S","T","Q","Q","S","S","H"][i]}</small></div>)}</div></article></div>}
 
    {tab==="Recompensas"&&<div className="page"><div className="rewardhero"><div><small>CARTEIRA</small><h2>{coins} NutriCoins</h2><p>Transforme hábitos consistentes em recompensas escolhidas por você.</p></div><span>🪙</span></div><div className="intro horizontal"><div><h2>Suas recompensas</h2><p>Cadastre coisas que realmente motivam você.</p></div><button className="primary" onClick={addReward}>+ Nova recompensa</button></div><div className="rewardgrid">{rewards.map(r=><article className="card reward" key={r.id}><span>🎁</span><h3>{r.name}</h3><p>{r.cost} NutriCoins</p><button disabled={coins<r.cost} onClick={()=>redeem(r)}>{coins>=r.cost?"Resgatar":"Saldo insuficiente"}</button></article>)}</div></div>}
   </section>
+  {mealEditor&&<MealEditor key={mealEditor.mode==="edit"?mealEditor.meal.id:"new"} editor={mealEditor} onSave={saveMeal} onClose={()=>setMealEditor(null)}/>}
  </main>
 }
 
