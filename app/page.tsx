@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { authClient } from "../lib/neon";
+import NutritionPicker from "../components/NutritionPicker";
+import { type FoodPortion, tacoFoodById, mealNutrition, ptNumber } from "../lib/nutrition";
 
-type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number};
+type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number;foods?:FoodPortion[]};
 type Reward={id:number;name:string;cost:number};
 
 const initialMeals:Meal[]=[
@@ -23,7 +25,7 @@ type Profile = { id: string; name?: string | null; email: string };
 type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
 
 
-type MealDetails=Pick<Meal,"name"|"time"|"items">;
+type MealDetails=Pick<Meal,"name"|"time"|"items"|"foods">;
 type MealEditorMode={mode:"new"}|{mode:"edit";meal:Meal};
 
 function MealEditor({editor,onSave,onClose}:{
@@ -35,6 +37,7 @@ function MealEditor({editor,onSave,onClose}:{
  const [name,setName]=useState(current?.name??"");
  const [time,setTime]=useState(current?.time??"12:00");
  const [items,setItems]=useState(current?.items??"");
+ const [foods,setFoods]=useState<FoodPortion[]>(current?.foods??[]);
  useEffect(()=>{
   const handleKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};
   window.addEventListener("keydown",handleKey);
@@ -42,8 +45,14 @@ function MealEditor({editor,onSave,onClose}:{
  },[onClose]);
  const submit=(e:FormEvent<HTMLFormElement>)=>{
   e.preventDefault();
-  const details={name:name.trim(),time,items:items.trim()};
-  if(!details.name||!details.time||!details.items)return;
+  const valid=foods.length===0||foods.every(f=>Number.isFinite(f.grams)&&f.grams>0&&f.grams<=3000&&tacoFoodById.has(f.foodId));
+  if(!valid)return;
+  const label=foods.map(f=>{
+   const food=tacoFoodById.get(f.foodId);
+   return (food?.name??"Alimento")+" ("+ptNumber(f.grams)+" g)";
+  }).join(" • ");
+  const details={name:name.trim(),time,items:items.trim()||label.slice(0,500),foods};
+  if(!details.name||!details.time||(!details.items&&foods.length===0))return;
   onSave(details);
  };
  return <div className="meal-modal-backdrop">
@@ -54,7 +63,7 @@ function MealEditor({editor,onSave,onClose}:{
     </div>
     <button type="button" className="meal-modal-close" onClick={onClose} aria-label="Fechar editor">×</button>
    </div>
-   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco.</p>
+   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco. Os cálculos nutricionais consideram somente itens selecionados na TACO.</p>
    <form className="meal-form" onSubmit={submit}>
     <label>Nome da refeição
      <input autoFocus required maxLength={70} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: Ceia, Pré-treino..." />
@@ -62,12 +71,13 @@ function MealEditor({editor,onSave,onClose}:{
     <label>Horário
      <input type="time" required value={time} onChange={e=>setTime(e.target.value)}/>
     </label>
-    <label>Alimentos / descrição
-     <textarea required maxLength={500} rows={4} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: Iogurte natural, banana e aveia"/>
+    <label>Observações ou descrição da refeição (opcional se houver alimentos TACO)
+     <textarea maxLength={500} rows={3} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: sugestão de preparo, substituições ou observações"/>
     </label>
+    <NutritionPicker value={foods} onChange={setFoods}/>
     <div className="meal-modal-actions">
      <button type="button" className="meal-cancel" onClick={onClose}>Cancelar</button>
-     <button type="submit" className="primary" disabled={!name.trim()||!items.trim()||!time}>{current?"Salvar alterações":"Criar refeição"}</button>
+     <button type="submit" className="primary" disabled={!name.trim()||!time||(!items.trim()&&foods.length===0)||foods.some(f=>f.grams<=0||f.grams>3000||!tacoFoodById.has(f.foodId))}>{current?"Salvar alterações":"Criar refeição"}</button>
     </div>
    </form>
   </section>
