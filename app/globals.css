@@ -79,3 +79,66 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
  .meal-modal-title h2{font-size:23px}
  .meal-modal-actions button{flex:1}
 }
+
+/* TACO nutrition finder and per-meal energy */
+.taco-picker{display:grid;gap:14px;border-top:1px solid #e2eae4;padding-top:18px}
+.taco-picker-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.taco-picker-header b{display:block;color:#204c37;font-size:15px}
+.taco-picker-header span:not(.taco-count){display:block;color:#667e70;font-size:12px;line-height:1.5;margin-top:4px}
+.taco-count{font-size:11px;color:#285b45;background:#eaf3e8;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.taco-filters{display:grid;grid-template-columns:1.25fr 1fr;gap:10px}
+.taco-filters label,.taco-selection label,.taco-added-row label{display:grid;gap:5px;font-size:11px;font-weight:700;color:#4c7060}
+.taco-filters input,.taco-filters select,.taco-selection input,.taco-added-row input{min-width:0;width:100%;border:1px solid #ccdad0;background:#fff;border-radius:10px;padding:10px;font:inherit;font-weight:400;color:#193d29}
+.taco-filters :is(input,select):focus,.taco-selection input:focus,.taco-added-row input:focus{outline:2px solid #c5e4ca;outline-offset:1px}
+.taco-results{max-height:215px;overflow:auto;border:1px solid #e0e9e1;border-radius:13px;background:#fff}
+.taco-result{width:100%;border:0;border-bottom:1px solid #e9efea;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:9px 12px;color:#173529;text-align:left;cursor:pointer}
+.taco-result:last-child{border-bottom:0}
+.taco-result:hover,.taco-result.chosen{background:#edf6ed}
+.taco-result>span{flex:1;font-size:12px;line-height:1.35}
+.taco-result small{display:block;color:#768d7b;font-size:10px;font-weight:400;margin-top:4px}
+.taco-result strong{font-size:12px;white-space:nowrap;text-align:right}
+.taco-no-results{font-size:12px;padding:12px;color:#667d6a}
+.taco-selection{display:grid;grid-template-columns:minmax(0,1fr) 100px;gap:10px;border:1px solid #b5d4bc;background:#f2f8f2;padding:13px;border-radius:13px}
+.taco-selection>div:first-child b{display:block;font-size:12px;line-height:1.4}
+.taco-selection>div:first-child small{display:block;font-size:11px;color:#698571;margin-top:4px}
+.taco-selection .taco-preview{display:grid;align-content:center;gap:4px;font-size:11px;color:#6b816f}
+.taco-selection .taco-preview strong{color:#1c5035;font-size:16px}
+.taco-selection>.primary{align-self:end;min-height:39px;font-size:11px}
+.taco-added{display:grid;gap:9px}
+.taco-added-title{display:flex;align-items:center;justify-content:space-between}
+.taco-added-title h3{margin:0;font-size:14px}
+.taco-added-title span{font-size:11px;color:#73867c}
+.taco-empty{border:1px dashed #d3dfd5;border-radius:12px;padding:13px;color:#76857b;font-size:12px;line-height:1.5}
+.taco-added-row{display:grid;grid-template-columns:minmax(0,1fr) 75px 85px 31px;gap:7px;align-items:center;border:1px solid #e5ebe7;border-radius:10px;padding:8px}
+.taco-added-name{min-width:0;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.taco-added-row input{padding:7px;font-size:12px}
+.taco-added-row strong{text-align:right;font-size:11px;white-space:nowrap;color:#285b45}
+.taco-remove{border:0;border-radius:8px;background:#fff1ef;color:#a03c32;font-size:22px;height:31px;cursor:pointer}
+.taco-totals{padding:13px;border-radius:12px;background:#eef5ef}
+.taco-totals>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.taco-totals>div:first-child span{font-size:12px;color:#567566}
+.taco-totals>div:first-child strong{font-size:18px;color:#21543b}
+.taco-macros{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;color:#5b7668;font-size:11px}
+.taco-warning{font-size:11px;color:#9c5b15;line-height:1.4;margin:9px 0 0}
+.taco-source{font-size:10px;color:#6e8073;line-height:1.6;margin:0}
+.taco-source a{color:#1c6344;text-decoration:underline}
+.nutrition-day{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fff;border:1px solid #e2e9e3;border-radius:18px;padding:17px;margin:0 0 17px}
+.nutrition-day>div{display:grid;align-content:center;gap:4px}
+.nutrition-day>div+div{border-left:1px solid #e1e8e2;padding-left:16px}
+.nutrition-day small{font-size:10px;color:#73907b;font-weight:700;letter-spacing:.08em}
+.nutrition-day h3{margin:2px 0;font-size:20px;color:#24533a}
+.nutrition-day>div>span{font-size:11px;color:#607e6a}
+.nutrition-day p{grid-column:1/-1;margin:3px 0 0;padding-top:8px;border-top:1px solid #edf1ed;font-size:11px;line-height:1.5;color:#718778}
+.meal-kcal{display:block;color:#296345;font-weight:700;font-size:11px;margin-top:5px}
+.diet-kcal{color:#276645!important;font-weight:700;font-size:12px}
+@media(max-width:600px){
+ .taco-filters{grid-template-columns:1fr}
+ .taco-selection{grid-template-columns:minmax(0,1fr) 95px}
+ .taco-added-row{grid-template-columns:minmax(0,1fr) 80px 30px}
+ .taco-added-row strong{grid-column:2}
+ .taco-added-row .taco-remove{grid-column:3;grid-row:1/3}
+ .nutrition-day{padding:13px;gap:8px}
+ .nutrition-day>div+div{padding-left:9px}
+ .nutrition-day h3{font-size:17px}
+ .taco-result{align-items:flex-start}
+}
