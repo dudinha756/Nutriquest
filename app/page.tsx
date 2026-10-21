@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { authClient } from "../lib/neon";
+import NutritionPicker from "../components/NutritionPicker";
+import { type FoodPortion, tacoFoodById, mealNutrition, ptNumber } from "../lib/nutrition";
 
-type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number};
+type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number;foods?:FoodPortion[]};
 type Reward={id:number;name:string;cost:number};
 
 const initialMeals:Meal[]=[
@@ -23,7 +25,11 @@ type Profile = { id: string; name?: string | null; email: string };
 type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
 
 
-type MealDetails=Pick<Meal,"name"|"time"|"items">;
+const mealFoodSummary=(meal:Meal)=>{
+ if(!meal.foods?.length)return meal.items;
+ return meal.foods.map(portion=>(tacoFoodById.get(portion.foodId)?.name??"Alimento")+" ("+ptNumber(portion.grams)+" g)").join(" • ");
+};
+type MealDetails=Pick<Meal,"name"|"time"|"items"|"foods">;
 type MealEditorMode={mode:"new"}|{mode:"edit";meal:Meal};
 
 function MealEditor({editor,onSave,onClose}:{
@@ -35,6 +41,7 @@ function MealEditor({editor,onSave,onClose}:{
  const [name,setName]=useState(current?.name??"");
  const [time,setTime]=useState(current?.time??"12:00");
  const [items,setItems]=useState(current?.items??"");
+ const [foods,setFoods]=useState<FoodPortion[]>(current?.foods??[]);
  useEffect(()=>{
   const handleKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};
   window.addEventListener("keydown",handleKey);
@@ -42,8 +49,10 @@ function MealEditor({editor,onSave,onClose}:{
  },[onClose]);
  const submit=(e:FormEvent<HTMLFormElement>)=>{
   e.preventDefault();
-  const details={name:name.trim(),time,items:items.trim()};
-  if(!details.name||!details.time||!details.items)return;
+  const valid=foods.length===0||foods.every(f=>Number.isFinite(f.grams)&&f.grams>0&&f.grams<=3000&&tacoFoodById.has(f.foodId));
+  if(!valid)return;
+  const details={name:name.trim(),time,items:items.trim(),foods};
+  if(!details.name||!details.time||(!details.items&&foods.length===0))return;
   onSave(details);
  };
  return <div className="meal-modal-backdrop">
@@ -54,7 +63,7 @@ function MealEditor({editor,onSave,onClose}:{
     </div>
     <button type="button" className="meal-modal-close" onClick={onClose} aria-label="Fechar editor">×</button>
    </div>
-   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco.</p>
+   <p className="meal-modal-help">Defina o nome, o horário e os alimentos deste bloco. Os cálculos nutricionais consideram somente itens selecionados na TACO.</p>
    <form className="meal-form" onSubmit={submit}>
     <label>Nome da refeição
      <input autoFocus required maxLength={70} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: Ceia, Pré-treino..." />
@@ -62,12 +71,13 @@ function MealEditor({editor,onSave,onClose}:{
     <label>Horário
      <input type="time" required value={time} onChange={e=>setTime(e.target.value)}/>
     </label>
-    <label>Alimentos / descrição
-     <textarea required maxLength={500} rows={4} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: Iogurte natural, banana e aveia"/>
+    <label>Observações ou descrição da refeição (opcional se houver alimentos TACO)
+     <textarea maxLength={500} rows={3} value={items} onChange={e=>setItems(e.target.value)} placeholder="Ex.: sugestão de preparo, substituições ou observações"/>
     </label>
+    <NutritionPicker value={foods} onChange={setFoods}/>
     <div className="meal-modal-actions">
      <button type="button" className="meal-cancel" onClick={onClose}>Cancelar</button>
-     <button type="submit" className="primary" disabled={!name.trim()||!items.trim()||!time}>{current?"Salvar alterações":"Criar refeição"}</button>
+     <button type="submit" className="primary" disabled={!name.trim()||!time||(!items.trim()&&foods.length===0)||foods.some(f=>f.grams<=0||f.grams>3000||!tacoFoodById.has(f.foodId))}>{current?"Salvar alterações":"Criar refeição"}</button>
     </div>
    </form>
   </section>
@@ -174,6 +184,16 @@ function Dashboard({ user }: { user: Profile }){
 
  const orderedMeals=useMemo(()=>[...meals].sort((a,b)=>a.time.localeCompare(b.time)),[meals]);
  const next=useMemo(()=>orderedMeals.find(m=>!m.done),[orderedMeals]);
+ const dailyNutrition=useMemo(()=>{
+  const calculated=meals.filter(m=>(m.foods?.length??0)>0);
+  const summaries=calculated.map(m=>({meal:m,values:mealNutrition(m.foods)}));
+  return {
+   planned:summaries.reduce((sum,a)=>sum+a.values.kcal,0),
+   completed:summaries.filter(a=>a.meal.done).reduce((sum,a)=>sum+a.values.kcal,0),
+   calculated:calculated.length,
+   missing:summaries.some(a=>a.values.missingKcal),
+  };
+ },[meals]);
  const saveMeal=(details:MealDetails)=>{
   if(mealEditor?.mode==="edit"){
    const id=mealEditor.meal.id;
@@ -222,13 +242,22 @@ function Dashboard({ user }: { user: Profile }){
      <article><span>🪙</span><div><small>NutriCoins</small><b>{coins}</b></div></article>
     </div>
 
+    <div className="nutrition-day">
+     <div><small>ENERGIA DAS REFEIÇÕES TACO</small><h3>{dailyNutrition.calculated>0?ptNumber(dailyNutrition.planned)+" kcal":"Adicione alimentos TACO"}</h3>
+      <span>Energia planejada {dailyNutrition.missing?"(incompleta)":""}</span></div>
+     <div><small>ENERGIA CONCLUÍDA</small><h3>{ptNumber(dailyNutrition.completed)} kcal</h3><span>Das refeições marcadas como feitas</span></div>
+     <p>{dailyNutrition.calculated} de {meals.length} refeições têm alimentos da TACO registrados. Os demais blocos não entram nos totais calóricos. Valores estimados por 100 g de parte comestível.</p>
+    </div>
     <div className="grid">
      <article className="card meals">
       <div className="title"><div><small>PLANO DE HOJE</small><h3>Suas refeições</h3></div><span>{percent}% concluído</span></div>
       {orderedMeals.length===0&&<p className="empty-meals">Nenhuma refeição cadastrada. Adicione seu primeiro bloco!</p>}
       {orderedMeals.map(m=><div className="meal-line" key={m.id}>
        <button className={m.done?"meal done":"meal"} onClick={()=>toggle(m.id)} aria-label={(m.done?"Desmarcar ":"Marcar como concluída: ")+m.name}>
-        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {m.items}</span></div><em>+{m.xp} XP</em>
+        <i>{m.done?"✓":""}</i><div><b>{m.name}</b><span>{m.time} · {mealFoodSummary(m)}</span>
+         {(m.foods?.length??0)>0&&m.items&&<small className="meal-note">{m.items}</small>}
+         {(m.foods?.length??0)>0&&<small className="meal-kcal">{mealNutrition(m.foods).missingKcal?"Kcal não disponíveis":ptNumber(mealNutrition(m.foods).kcal)+" kcal pela TACO"}</small>}
+        </div><em>+{m.xp} XP</em>
        </button>
        <button className="meal-quick-edit" type="button" aria-label={"Editar "+m.name} onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
       </div>)}
@@ -246,7 +275,10 @@ function Dashboard({ user }: { user: Profile }){
     {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
     {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
      <strong>{String(i+1).padStart(2,"0")}</strong>
-     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {m.items}</p></div>
+     <div className="dietrow-info"><h3>{m.name}</h3><p><b>{m.time}</b> · {mealFoodSummary(m)}</p>
+      {(m.foods?.length??0)>0&&m.items&&<p className="meal-note">{m.items}</p>}
+      {(m.foods?.length??0)>0&&<p className="diet-kcal">{mealNutrition(m.foods).missingKcal?"Energia incompleta":ptNumber(mealNutrition(m.foods).kcal)+" kcal"} · {m.foods?.length} alimentos TACO</p>}
+     </div>
      <div className="dietrow-actions">
       <button onClick={()=>toggle(m.id)}>{m.done?"Concluída ✓":"Marcar como feita"}</button>
       <button className="edit-action" onClick={()=>setMealEditor({mode:"edit",meal:m})}>Editar</button>
