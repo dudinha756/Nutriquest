@@ -144,3 +144,42 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
 }
 
 .meal-note{display:block;color:#708478!important;font-size:11px!important;font-weight:400;line-height:1.5;margin-top:4px;overflow-wrap:anywhere}
+
+/* Per-user diet PDF library */
+.diet-pdf-card{background:#fff;border:1px solid #dbe8dc;border-radius:20px;padding:22px;display:grid;gap:15px}
+.diet-pdf-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.diet-pdf-heading small{font-size:10px;color:#7e9a81;letter-spacing:.13em;font-weight:800}
+.diet-pdf-heading h3{margin:7px 0 6px;font-size:20px;color:#1e4833}
+.diet-pdf-heading p{font-size:12px;line-height:1.6;color:#6f8275;max-width:610px;margin:0}
+.diet-pdf-icon{display:grid;place-items:center;border-radius:11px;background:#e6f0e7;color:#2b6341;min-width:49px;height:49px;font-size:12px;font-weight:800}
+.diet-pdf-muted{font-size:12px;background:#f5f8f4;color:#6e8072;border-radius:11px;padding:14px;margin:0}
+.diet-pdf-saved{background:#f4f9f4;border:1px solid #d9e8da;border-radius:14px;padding:14px;display:grid;gap:13px}
+.diet-pdf-file{display:flex;gap:12px;align-items:center;min-width:0}
+.diet-pdf-file-icon{display:grid;place-items:center;background:#285b45;color:white;border-radius:9px;min-width:42px;height:45px;font-size:11px;font-weight:800}
+.diet-pdf-file>div{display:grid;gap:4px;min-width:0}
+.diet-pdf-file strong{font-size:13px;color:#214b34;overflow-wrap:anywhere}
+.diet-pdf-file small{font-size:11px;color:#66816e}
+.diet-pdf-actions{display:flex;gap:9px;flex-wrap:wrap}
+.diet-pdf-actions a,.diet-pdf-actions button{border:1px solid #cce0d0;background:#fff;color:#245640;text-decoration:none;padding:9px 13px;font-size:12px;font-weight:700;border-radius:9px;cursor:pointer}
+.diet-pdf-actions a:hover,.diet-pdf-actions button:hover{background:#e9f3eb}
+.diet-pdf-actions .diet-pdf-delete{color:#ab3d34;border-color:#edceca}
+.diet-pdf-actions button:disabled{opacity:.5;cursor:wait}
+.diet-pdf-upload{display:grid;gap:8px;border-top:1px solid #e7eee7;padding-top:13px}
+.diet-pdf-upload>label{font-size:12px;font-weight:750;color:#325a3e}
+.diet-pdf-upload input[type=file]{width:100%;font-size:12px;background:#f6f9f6;color:#2b5440;border:1px dashed #becfbd;padding:13px;border-radius:11px;min-width:0}
+.diet-pdf-upload input[type=file]::file-selector-button{margin-right:12px;padding:8px 10px;background:#e2eee2;border:0;border-radius:8px;color:#285b45;font-weight:700}
+.diet-pdf-upload-bottom{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.diet-pdf-upload-bottom small{font-size:11px;color:#829588}
+.diet-pdf-upload-bottom .primary{font-size:12px;white-space:nowrap;padding:11px 14px}
+.diet-pdf-upload-bottom .primary:disabled{opacity:.5;cursor:not-allowed}
+.diet-pdf-error,.diet-pdf-success{margin:0;padding:10px;border-radius:10px;font-size:12px;line-height:1.5}
+.diet-pdf-error{color:#9e332b;background:#fff0ef;border:1px solid #edc6c0}
+.diet-pdf-success{color:#276443;background:#ebf7ed;border:1px solid #c5e2cc}
+.diet-pdf-note{font-size:10px;color:#8b9990;line-height:1.55;margin:0}
+@media(max-width:600px){
+ .diet-pdf-card{padding:17px}
+ .diet-pdf-heading h3{font-size:18px}
+ .diet-pdf-upload-bottom{flex-direction:column;align-items:stretch}
+ .diet-pdf-upload-bottom .primary{width:100%;min-height:43px}
+ .diet-pdf-actions a,.diet-pdf-actions button{flex:1 1 auto;text-align:center}
+}
