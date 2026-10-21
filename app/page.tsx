@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { authClient } from "../lib/neon";
 import NutritionPicker from "../components/NutritionPicker";
+import DietPdfManager from "../components/DietPdfManager";
 import { type FoodPortion, tacoFoodById, mealNutrition, ptNumber } from "../lib/nutrition";
 
 type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number;foods?:FoodPortion[]};
@@ -272,6 +273,7 @@ function Dashboard({ user }: { user: Profile }){
      <div className="intro"><small>PLANEJAMENTO</small><h2>Sua dieta</h2><p>Adicione, edite e organize seus blocos por horário.</p></div>
      <button className="primary" onClick={()=>setMealEditor({mode:"new"})}>+ Nova refeição</button>
     </div>
+    <DietPdfManager/>
     {orderedMeals.length===0&&<article className="card empty-meals">Sua dieta ainda não tem refeições. Use o botão acima para começar.</article>}
     {orderedMeals.map((m,i)=><article className="dietrow" key={m.id}>
      <strong>{String(i+1).padStart(2,"0")}</strong>
