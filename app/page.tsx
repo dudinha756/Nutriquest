@@ -299,12 +299,32 @@ function Dashboard({ user }: { user: Profile }){
 
 function AuthScreen(){
  const [createAccount,setCreateAccount]=useState(false);
+ const [forgotPassword,setForgotPassword]=useState(false);
  const [name,setName]=useState("");
  const [email,setEmail]=useState("");
  const [password,setPassword]=useState("");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const [notice,setNotice]=useState("");
+ const requestReset=async(e:FormEvent<HTMLFormElement>)=>{
+  e.preventDefault();
+  if(busy)return;
+  const normalizedEmail=email.trim().toLowerCase();
+  if(!normalizedEmail)return;
+  setBusy(true);setError("");setNotice("");
+  try{
+   const result=await authClient.requestPasswordReset({
+    email:normalizedEmail,
+    redirectTo:window.location.origin+"/reset-password",
+   });
+   if(result.error)throw new Error(result.error.message||"Não foi possível enviar o link. Tente novamente.");
+   setNotice("Se este e-mail estiver cadastrado, você receberá um link para criar uma nova senha. Verifique também a pasta de spam.");
+  }catch(err){
+   setError(err instanceof Error?err.message:"Ocorreu um erro ao solicitar a recuperação.");
+  }finally{
+   setBusy(false);
+  }
+ };
  const submit=async(e:FormEvent<HTMLFormElement>)=>{
   e.preventDefault();
   if(busy)return;
@@ -331,21 +351,30 @@ function AuthScreen(){
  return <main className="authscreen">
   <section className="authcard">
    <div className="authlogo">🥗</div>
-   <h1>NutriQuest</h1>
-   <p className="authsubtitle">Consistência que recompensa. Seu progresso, sua conta.</p>
-   <div className="authswitch">
+   <h1>{forgotPassword?"Recuperar senha":"NutriQuest"}</h1>
+   <p className="authsubtitle">{forgotPassword?"Informe o e-mail da sua conta para receber um link de recuperação.":"Consistência que recompensa. Seu progresso, sua conta."}</p>
+   {!forgotPassword&&<div className="authswitch">
     <button type="button" className={!createAccount?"chosen":""} onClick={()=>{setCreateAccount(false);setError("");setNotice("")}}>Entrar</button>
     <button type="button" className={createAccount?"chosen":""} onClick={()=>{setCreateAccount(true);setError("");setNotice("")}}>Criar conta</button>
-   </div>
-   <form onSubmit={submit}>
+   </div>}
+   {forgotPassword?<form onSubmit={requestReset}>
+    <label>E-mail cadastrado
+     <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="voce@exemplo.com" autoComplete="email" required/>
+    </label>
+    {error&&<div className="autherror" role="alert">{error}</div>}
+    {notice&&<div className="authnotice" role="status">{notice}</div>}
+    <button className="authsubmit" type="submit" disabled={busy}>{busy?"Enviando...":"Enviar link de recuperação"}</button>
+    <button className="auth-back" type="button" disabled={busy} onClick={()=>{setForgotPassword(false);setError("");setNotice("");}}>Voltar para o login</button>
+   </form>:<form onSubmit={submit}>
     {createAccount&&<label>Seu nome<input value={name} onChange={e=>setName(e.target.value)} placeholder="Como podemos chamar você?" autoComplete="name" required maxLength={100}/></label>}
     <label>E-mail<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="voce@exemplo.com" autoComplete="email" required/></label>
     <label>Senha<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder={createAccount?"Mínimo de 8 caracteres":"Sua senha"} autoComplete={createAccount?"new-password":"current-password"} minLength={createAccount?8:1} required/></label>
+    {!createAccount&&<button type="button" className="forgot-link" onClick={()=>{setForgotPassword(true);setError("");setNotice("");setPassword("");}}>Esqueci minha senha</button>}
     {error&&<div className="autherror" role="alert">{error}</div>}
     {notice&&<div className="authnotice" role="status">{notice}</div>}
     <button className="authsubmit" type="submit" disabled={busy}>{busy?"Aguarde...":createAccount?"Criar minha conta":"Entrar no NutriQuest"}</button>
    </form>
-   <p className="authfoot">Cada usuário mantém suas refeições, metas e recompensas separadas.</p>
+   <p className="authfoot">{forgotPassword?"O link será enviado apenas para o endereço associado à conta.":"Cada usuário mantém suas refeições, metas e recompensas separadas."}</p>
   </section>
  </main>;
 }
