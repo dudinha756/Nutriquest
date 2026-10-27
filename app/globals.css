@@ -190,3 +190,60 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
 .auth-back{border:1px solid #d3e0d6;color:#285b45;background:#f7faf7;border-radius:11px;padding:11px 14px;font-weight:650;cursor:pointer}
 .auth-return-link{display:block;text-align:center;margin-top:18px;color:#285b45;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .auth-back:disabled{opacity:.6;cursor:wait}
+
+/* Conquistas semanais e celebrações sem culpa */
+.weekly-rewards{display:grid;gap:17px}
+.wellness-reward-hero{background:linear-gradient(120deg,#e6efcd,#eaf4e7);color:#173529}
+.wellness-reward-hero small{color:#567458}
+.wellness-reward-hero h2{color:#214b36;font-size:34px}
+.wellness-reward-hero p{max-width:590px;line-height:1.6;color:#56725e}
+.wellness-reward-hero>span{font-size:65px;line-height:1}
+.weekly-score{display:grid;gap:15px}
+.weekly-score-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.weekly-score-top small{font-size:10px;font-weight:800;color:#688272;letter-spacing:.09em}
+.weekly-score-top h3{margin:5px 0 0;color:#214b36;font-size:28px}
+.weekly-score-top h3 span{font-size:12px;color:#8b9d90;font-weight:500}
+.weekly-score-pill{padding:8px 11px;border-radius:999px;background:#e9f3e9;color:#285b45;font-size:11px;font-weight:700}
+.weekly-bar{height:11px;border-radius:50px;background:#e8eee7;overflow:hidden}
+.weekly-bar span{display:block;height:100%;border-radius:50px;background:linear-gradient(90deg,#3b8661,#a4c972);transition:width .2s ease}
+.weekly-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.weekly-day{border:1px solid #e2eae1;border-radius:12px;padding:11px 6px;min-width:0;display:grid;align-content:start;justify-items:center;gap:5px;background:#f9faf8;text-align:center}
+.weekly-day b{font-size:12px;color:#425e4d}
+.weekly-day small{font-size:10px;color:#84988b}
+.weekly-day>span{font-size:16px;font-weight:800;color:#65806c}
+.weekly-day em{font-style:normal;font-size:10px;font-weight:700;color:#286d49}
+.weekly-day.complete{background:#e9f6e9;border-color:#a9cfaf}
+.weekly-day.complete>span{color:#2d8152}
+.weekly-day.is-today{outline:2px solid #558a65;outline-offset:-2px}
+.weekly-score-foot,.weekly-balance-note,.weekly-coins-note{margin:0;color:#6b8172;font-size:12px;line-height:1.65}
+.wellness-milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.wellness-milestone{display:flex;flex-direction:column;gap:11px;min-width:0;background:#fff}
+.wellness-milestone.achieved{border-color:#8ec4a0;background:#f6fbf5}
+.milestone-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.milestone-icon{font-size:29px}
+.milestone-tag{font-size:10px;font-weight:750;color:#657d69;background:#edf2eb;border-radius:999px;padding:7px 8px;text-align:center}
+.wellness-milestone.achieved .milestone-tag{background:#dcefe0;color:#236e40}
+.wellness-milestone h3{color:#1b4931;font-size:18px;margin:0}
+.wellness-milestone p{font-size:12px;line-height:1.5;color:#788c7e;margin:0}
+.milestone-example{background:#f0f5ee;padding:12px;border-radius:11px;color:#2a5840;font-size:12px;font-weight:700;line-height:1.55}
+.milestone-meta{font-size:10px;color:#849389;margin-top:auto}
+.weekly-balance-note{padding:14px 16px;border:1px solid #dfe9db;border-radius:13px;background:#f3f8ef}
+.weekly-coins-note{margin-top:-10px}
+@media(max-width:960px){
+ .wellness-milestones{grid-template-columns:1fr}
+ .wellness-milestone{gap:8px}
+}
+@media(max-width:600px){
+ .wellness-reward-hero{padding:23px}
+ .wellness-reward-hero>span{display:none}
+ .wellness-reward-hero h2{font-size:27px}
+ .weekly-score{padding:14px}
+ .weekly-score-top h3{font-size:24px}
+ .weekly-score-pill{font-size:10px}
+ .weekly-days{gap:3px}
+ .weekly-day{padding:9px 1px;border-radius:8px;gap:4px}
+ .weekly-day b{font-size:10px}
+ .weekly-day small{font-size:9px}
+ .weekly-day>span{font-size:11px}
+ .weekly-day em{font-size:8px}
+}
