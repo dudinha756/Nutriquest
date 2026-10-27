@@ -373,7 +373,7 @@ function AuthScreen(){
     {error&&<div className="autherror" role="alert">{error}</div>}
     {notice&&<div className="authnotice" role="status">{notice}</div>}
     <button className="authsubmit" type="submit" disabled={busy}>{busy?"Aguarde...":createAccount?"Criar minha conta":"Entrar no NutriQuest"}</button>
-   </form>
+   </form>}
    <p className="authfoot">{forgotPassword?"O link será enviado apenas para o endereço associado à conta.":"Cada usuário mantém suas refeições, metas e recompensas separadas."}</p>
   </section>
  </main>;
