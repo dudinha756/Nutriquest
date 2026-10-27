@@ -19,7 +19,7 @@ const initialMeals:Meal[]=[
  {id:5,name:"Jantar",time:"20:00",items:"Proteína • carboidrato • vegetais",done:false,xp:10},
 ];
 const initialRewards:Reward[]=[
- {id:1,name:"Refeição especial",cost:250},
+ {id:1,name:"Passeio especial",cost:250},
  {id:2,name:"Cinema",cost:500},
  {id:3,name:"Autocuidado",cost:800},
 ];
