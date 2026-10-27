@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { authClient } from "../lib/neon";
 import NutritionPicker from "../components/NutritionPicker";
 import DietPdfManager from "../components/DietPdfManager";
+import WeeklyRewards from "../components/WeeklyRewards";
+import { type ActivityByDate, cleanActivity, localDateKey, weeklySummary } from "../lib/weekly-rewards";
 import { type FoodPortion, tacoFoodById, mealNutrition, ptNumber } from "../lib/nutrition";
 
 type Meal={id:number;name:string;time:string;items:string;done:boolean;xp:number;foods?:FoodPortion[]};
@@ -23,7 +25,7 @@ const initialRewards:Reward[]=[
 ];
 
 type Profile = { id: string; name?: string | null; email: string };
-type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[] };
+type SavedState = { meals: Meal[]; water: number; xp: number; coins: number; streak: number; rewards: Reward[]; activeDate?:string; activityByDate?:ActivityByDate };
 
 
 const mealFoodSummary=(meal:Meal)=>{
@@ -98,6 +100,8 @@ function Dashboard({ user }: { user: Profile }){
  const [saveError,setSaveError]=useState("");
  const [hasLegacy,setHasLegacy]=useState(false);
  const [mealEditor,setMealEditor]=useState<MealEditorMode|null>(null);
+ const [activeDate,setActiveDate]=useState(()=>localDateKey(new Date()));
+ const [activityByDate,setActivityByDate]=useState<ActivityByDate>({});
 
  useEffect(()=>{
   let cancelled=false;
@@ -108,12 +112,19 @@ function Dashboard({ user }: { user: Profile }){
    if(!response.ok)throw new Error(body.error||"Não foi possível consultar seus dados.");
    const saved=body.data;
    if(saved){
-    if(Array.isArray(saved.meals))setMeals(saved.meals);
-    if(typeof saved.water==="number")setWater(saved.water);
+    const today=localDateKey(new Date());
+    const previousDate=typeof saved.activeDate==="string"?saved.activeDate:null;
+    if(Array.isArray(saved.meals)){
+     // Accounts created before this upgrade keep their existing completed marks today.
+     setMeals(previousDate&&previousDate!==today?saved.meals.map(m=>({...m,done:false})):saved.meals);
+    }
+    if(typeof saved.water==="number")setWater(previousDate&&previousDate!==today?0:saved.water);
     if(typeof saved.xp==="number")setXp(saved.xp);
     if(typeof saved.coins==="number")setCoins(saved.coins);
     if(typeof saved.streak==="number")setStreak(saved.streak);
     if(Array.isArray(saved.rewards))setRewards(saved.rewards);
+    setActivityByDate(cleanActivity(saved.activityByDate));
+    setActiveDate(today);
    }else if(localStorage.getItem("nutriquest")&&!localStorage.getItem("nutriquest_imported_"+user.id)){
     setHasLegacy(true);
    }
@@ -131,7 +142,7 @@ function Dashboard({ user }: { user: Profile }){
      method:"PUT",
      credentials:"same-origin",
      headers:{"Content-Type":"application/json"},
-     body:JSON.stringify({meals,water,xp,coins,streak,rewards}),
+     body:JSON.stringify({meals,water,xp,coins,streak,rewards,activeDate,activityByDate}),
     });
     if(!response.ok){
      const body=await response.json().catch(()=>({error:"Falha na conexão com o servidor."})) as {error?:string};
@@ -143,7 +154,40 @@ function Dashboard({ user }: { user: Profile }){
    }
   },700);
   return ()=>clearTimeout(timer);
- },[loaded,user.id,meals,water,xp,coins,streak,rewards]);
+ },[loaded,user.id,meals,water,xp,coins,streak,rewards,activeDate,activityByDate]);
+
+ // Daily records are created from the actual meal checkmarks, not sample charts.
+ useEffect(()=>{
+  if(!loaded)return;
+  setActivityByDate(previous=>{
+   const completed=meals.filter(m=>m.done).length,planned=meals.length;
+   if(previous[activeDate]?.completed===completed&&previous[activeDate]?.planned===planned)return previous;
+   const next={...previous,[activeDate]:{completed,planned}};
+   const keys=Object.keys(next).sort();
+   for(const key of keys.slice(0,Math.max(0,keys.length-180)))delete next[key];
+   return next;
+  });
+ },[loaded,meals,activeDate]);
+
+ // Start a fresh checklist each day while keeping the previous day's history.
+ useEffect(()=>{
+  if(!loaded)return;
+  const rollDay=()=>{
+   const today=localDateKey(new Date());
+   if(today===activeDate)return;
+   setMeals(previous=>previous.map(m=>({...m,done:false})));
+   setWater(0);
+   setActiveDate(today);
+  };
+  const timer=window.setInterval(rollDay,60_000);
+  window.addEventListener("focus",rollDay);
+  document.addEventListener("visibilitychange",rollDay);
+  return ()=>{
+   window.clearInterval(timer);
+   window.removeEventListener("focus",rollDay);
+   document.removeEventListener("visibilitychange",rollDay);
+  };
+ },[loaded,activeDate]);
 
  const importOldProgress=()=>{
   const raw=localStorage.getItem("nutriquest");
@@ -156,6 +200,8 @@ function Dashboard({ user }: { user: Profile }){
    if(typeof d.coins==="number")setCoins(d.coins);
    if(typeof d.streak==="number")setStreak(d.streak);
    if(Array.isArray(d.rewards))setRewards(d.rewards);
+   setActivityByDate(cleanActivity(d.activityByDate));
+   setActiveDate(localDateKey(new Date()));
    localStorage.setItem("nutriquest_imported_"+user.id,"1");
    setHasLegacy(false);
   }catch{alert("Não foi possível importar esses dados.")};
@@ -164,6 +210,7 @@ function Dashboard({ user }: { user: Profile }){
  const done=meals.filter(m=>m.done).length;
  const percent=meals.length?Math.round(done/meals.length*100):0;
  const level=Math.floor(xp/250)+1;
+ const thisWeek=useMemo(()=>weeklySummary(activityByDate,new Date(activeDate+"T12:00:00")),[activityByDate,activeDate]);
  const toggle=(id:number)=>setMeals(ms=>ms.map(m=>{
   if(m.id!==id)return m;
   const completing=!m.done;
@@ -221,7 +268,7 @@ function Dashboard({ user }: { user: Profile }){
   <aside>
    <div className="brand"><div>🥗</div><span><b>NutriQuest</b><small>consistência que recompensa</small></span></div>
    {["Hoje","Minha dieta","Progresso","Recompensas"].map(i=><button key={i} onClick={()=>setTab(i)} className={tab===i?"active":""}>{i}</button>)}
-   <div className="sidebox"><b>🔥 {streak} dias</b><span>Sua sequência atual</span></div>
+   <div className="sidebox"><b>🌿 {thisWeek.consistentDays} dias</b><span>Consistentes nesta semana</span></div>
    <button className="logout" onClick={()=>{void authClient.signOut()}}>Sair da conta</button>
   </aside>
 
@@ -232,7 +279,7 @@ function Dashboard({ user }: { user: Profile }){
 
    {tab==="Hoje"&&<>
     <div className="hero">
-     <div><span className="tag">🔥 sequência de {streak} dias</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{meals.length===0?<>Crie seu primeiro bloco de refeição para começar.</>:next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
+     <div><span className="tag">🌿 {thisWeek.consistentDays} dias consistentes na semana</span><h2>Hoje é mais um dia<br/>para cuidar de você.</h2><p>{meals.length===0?<>Crie seu primeiro bloco de refeição para começar.</>:next?<>Próxima refeição: <b>{next.name}</b> às {next.time}.</>:<>Parabéns! Todas as refeições planejadas foram concluídas.</>}</p></div>
      <div className="circle" style={{background:`conic-gradient(#ddeaaf ${percent*3.6}deg,#ffffff24 0)`}}><div><b>{percent}%</b><span>da dieta</span></div></div>
     </div>
 
@@ -289,9 +336,10 @@ function Dashboard({ user }: { user: Profile }){
     </article>)}
    </div>}
 
-   {tab==="Progresso"&&<div className="page"><div className="intro"><small>EVOLUÇÃO</small><h2>Seu progresso</h2><p>Consistência vale mais que perfeição.</p></div><div className="stats"><article><span>🎯</span><div><small>Adesão hoje</small><b>{percent}%</b></div></article><article><span>🔥</span><div><small>Sequência</small><b>{streak} dias</b></div></article><article><span>⚡</span><div><small>XP total</small><b>{xp}</b></div></article><article><span>🏆</span><div><small>Nível</small><b>{level}</b></div></article></div><article className="card progressCard"><h3>Meta semanal</h3><p>Complete pelo menos 90% da dieta em 5 dias.</p><div className="week">{[78,92,66,100,84,94,percent].map((v,i)=><div key={i}><i><span style={{height:`${v}%`}}/></i><small>{["S","T","Q","Q","S","S","H"][i]}</small></div>)}</div></article></div>}
+   {tab==="Progresso"&&<div className="page"><div className="intro"><small>EVOLUÇÃO</small><h2>Seu progresso</h2><p>Consistência vale mais que perfeição.</p></div><div className="stats"><article><span>🎯</span><div><small>Adesão hoje</small><b>{percent}%</b></div></article><article><span>🌿</span><div><small>Dias consistentes na semana</small><b>{thisWeek.consistentDays}/7</b></div></article><article><span>⚡</span><div><small>XP total</small><b>{xp}</b></div></article><article><span>🏆</span><div><small>Nível</small><b>{level}</b></div></article></div><article className="card progressCard"><h3>Meta semanal</h3><p>Complete pelo menos 90% da dieta em 5 dias.</p><div className="week">{thisWeek.days.map(day=><div key={day.key}><i><span style={{height:(day.percent??0)+"%"}}/></i><small>{day.label}</small></div>)}</div><p>Os indicadores mostram apenas o que foi registrado; dias sem registros ficam em branco. A pontuação semanal considera dias com pelo menos 80% das refeições planejadas concluídas.</p></article></div>}
 
-   {tab==="Recompensas"&&<div className="page"><div className="rewardhero"><div><small>CARTEIRA</small><h2>{coins} NutriCoins</h2><p>Transforme hábitos consistentes em recompensas escolhidas por você.</p></div><span>🪙</span></div><div className="intro horizontal"><div><h2>Suas recompensas</h2><p>Cadastre coisas que realmente motivam você.</p></div><button className="primary" onClick={addReward}>+ Nova recompensa</button></div><div className="rewardgrid">{rewards.map(r=><article className="card reward" key={r.id}><span>🎁</span><h3>{r.name}</h3><p>{r.cost} NutriCoins</p><button disabled={coins<r.cost} onClick={()=>redeem(r)}>{coins>=r.cost?"Resgatar":"Saldo insuficiente"}</button></article>)}</div></div>}
+   {tab==="Recompensas"&&<WeeklyRewards activity={activityByDate} today={activeDate} coins={coins} rewards={rewards} onAddReward={addReward} onRedeem={redeem}/>}
+
   </section>
   {mealEditor&&<MealEditor key={mealEditor.mode==="edit"?mealEditor.meal.id:"new"} editor={mealEditor} onSave={saveMeal} onClose={()=>setMealEditor(null)}/>}
  </main>
