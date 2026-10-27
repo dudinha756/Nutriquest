@@ -183,3 +183,10 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
  .diet-pdf-upload-bottom .primary{width:100%;min-height:43px}
  .diet-pdf-actions a,.diet-pdf-actions button{flex:1 1 auto;text-align:center}
 }
+
+/* Self-service password recovery */
+.forgot-link{justify-self:end;border:0;background:transparent;color:#286c4c;padding:2px 0;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.forgot-link:hover{color:#16402b}
+.auth-back{border:1px solid #d3e0d6;color:#285b45;background:#f7faf7;border-radius:11px;padding:11px 14px;font-weight:650;cursor:pointer}
+.auth-return-link{display:block;text-align:center;margin-top:18px;color:#285b45;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.auth-back:disabled{opacity:.6;cursor:wait}
