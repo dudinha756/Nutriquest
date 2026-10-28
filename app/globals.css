@@ -270,3 +270,29 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
 .rewards-demo-week{background:#2b6949;border:0;color:white;border-radius:12px;padding:13px;font-weight:750;cursor:pointer}
 .rewards-demo-disclaimer{font-size:12px;line-height:1.65;color:#738678;padding:4px 5px}
 @media(max-width:600px){.rewards-demo-shell{padding:14px 10px 35px;gap:14px}.rewards-demo-intro{padding:22px 17px}.rewards-demo-intro h1{font-size:25px}.rewards-demo-controls{padding:15px}.rewards-demo-actions{gap:4px}.rewards-demo-actions button{padding:10px 1px;border-radius:8px}.rewards-demo-actions button>span{font-size:10px}.rewards-demo-actions button>small{font-size:9px}.rewards-demo-actions button>b{font-size:16px}}
+
+/* Automatic food ideas based on weekly consistency; no food is gated */
+.food-idea-section{display:grid;gap:17px;padding:23px;border:1px solid #d9e6db;border-radius:20px;background:linear-gradient(180deg,#fbfdf9,#f2f7f0)}
+.food-idea-intro{display:flex;align-items:start;justify-content:space-between;gap:14px}
+.food-idea-intro small{font-size:10px;letter-spacing:.1em;font-weight:800;color:#53815d}
+.food-idea-intro h2{margin:5px 0 8px;font-size:25px;color:#1f4b36;line-height:1.2}
+.food-idea-intro p{font-size:13px;color:#66806d;line-height:1.65;max-width:680px;margin:0}
+.food-idea-intro>span{font-size:42px;background:#e5f0df;border-radius:16px;min-width:64px;height:64px;display:grid;place-items:center}
+.food-idea-filter{display:flex;flex-wrap:wrap;gap:7px}
+.food-idea-filter button{background:white;border:1px solid #d1dfd2;border-radius:100px;color:#516a57;padding:9px 12px;font-weight:750;font-size:11px;cursor:pointer}
+.food-idea-filter button.selected{color:white;background:#2a6548;border-color:#2a6548}
+.food-idea-filter button:hover:not(.selected){background:#eaf4e9}
+.food-idea-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.food-idea-card{display:flex;flex-direction:column;gap:10px;background:white;border:1px solid #dfe8df;border-radius:16px;padding:17px;min-width:0;box-shadow:0 7px 19px #1d48320a}
+.food-idea-card-top{display:flex;align-items:start;justify-content:space-between;gap:8px}
+.food-idea-emoji{font-size:32px}
+.food-idea-category{font-size:10px;color:#54745e;background:#edf5eb;border-radius:99px;padding:6px 8px;text-align:center}
+.food-idea-card h3{font-size:17px;color:#1d4630;margin:0}
+.food-idea-card p{font-size:12px;line-height:1.55;color:#627c6a;margin:0}
+.food-idea-tip{font-size:11px;line-height:1.6;color:#416b4e;border-top:1px solid #edf2ec;margin-top:auto;padding-top:11px}
+.food-idea-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.food-idea-shuffle{border:1px solid #a9ccb1;background:#e4f1e4;color:#245f40;font-weight:800;font-size:12px;padding:11px 15px;border-radius:11px;cursor:pointer}
+.food-idea-shuffle:hover{background:#d8eadb}
+.food-idea-actions p{flex:1;min-width:180px;font-size:11px;line-height:1.55;color:#7d927f;margin:0}
+@media(max-width:800px){.food-idea-grid{grid-template-columns:1fr}.food-idea-card{gap:8px}.food-idea-intro>span{display:none}}
+@media(max-width:600px){.food-idea-section{padding:16px;gap:13px;border-radius:16px}.food-idea-intro h2{font-size:22px}.food-idea-filter button{padding:8px 10px}.food-idea-card{padding:15px}.food-idea-actions{align-items:stretch}.food-idea-shuffle{width:100%}}
