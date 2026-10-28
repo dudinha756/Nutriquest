@@ -247,3 +247,26 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
  .weekly-day>span{font-size:11px}
  .weekly-day em{font-size:8px}
 }
+
+/* Public, account-free demonstration for mobile */
+.rewards-demo-shell{width:min(100%,1060px);margin:0 auto;min-height:100vh;padding:26px 19px 55px;display:grid;align-content:start;gap:21px;color:#173529}
+.rewards-demo-intro{padding:29px;border-radius:22px;background:linear-gradient(125deg,#e6f0df,#f7f9ed);border:1px solid #d6e6d4}
+.rewards-demo-label{font-size:11px;font-weight:850;letter-spacing:.12em;color:#3f7455}
+.rewards-demo-intro h1{margin:9px 0 6px;font-size:32px;color:#16442f}
+.rewards-demo-intro>p{font-size:14px;line-height:1.7;color:#4e725d;max-width:680px}
+.rewards-demo-notice{padding:11px 14px;background:#eff6ed;border:1px solid #cadec9;border-radius:12px;color:#45674f;font-size:12px;line-height:1.55;margin:0}
+.rewards-demo-controls{background:#fff;border:1px solid #dbe7dc;border-radius:19px;padding:20px;display:grid;gap:13px}
+.rewards-demo-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.rewards-demo-head small{font-size:10px;color:#738d78;letter-spacing:.09em;font-weight:800}
+.rewards-demo-head h2{font-size:20px;margin:4px 0;color:#1d4a34}
+.rewards-demo-head>button{background:#f1f7f0;border:1px solid #bad5be;border-radius:11px;padding:9px 13px;color:#2d6147;font-weight:750;cursor:pointer}
+.rewards-demo-controls>p{font-size:12px;color:#6c8473;line-height:1.55;margin:0}
+.rewards-demo-actions{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.rewards-demo-actions button{display:grid;justify-items:center;gap:6px;padding:13px 4px;border:1px solid #cbdccc;background:#f9fcf9;border-radius:12px;cursor:pointer;color:#41644d}
+.rewards-demo-actions button>span{font-size:12px;font-weight:700}
+.rewards-demo-actions button>b{font-size:19px}
+.rewards-demo-actions button>small{font-size:10px}
+.rewards-demo-actions button.is-selected{background:#dff0e2;border-color:#76b28b;color:#1e6743}
+.rewards-demo-week{background:#2b6949;border:0;color:white;border-radius:12px;padding:13px;font-weight:750;cursor:pointer}
+.rewards-demo-disclaimer{font-size:12px;line-height:1.65;color:#738678;padding:4px 5px}
+@media(max-width:600px){.rewards-demo-shell{padding:14px 10px 35px;gap:14px}.rewards-demo-intro{padding:22px 17px}.rewards-demo-intro h1{font-size:25px}.rewards-demo-controls{padding:15px}.rewards-demo-actions{gap:4px}.rewards-demo-actions button{padding:10px 1px;border-radius:8px}.rewards-demo-actions button>span{font-size:10px}.rewards-demo-actions button>small{font-size:9px}.rewards-demo-actions button>b{font-size:16px}}
