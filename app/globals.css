@@ -190,3 +190,109 @@ aside>button.logout{margin-top:6px;color:#e5eede;border:1px solid #ffffff35;text
 .auth-back{border:1px solid #d3e0d6;color:#285b45;background:#f7faf7;border-radius:11px;padding:11px 14px;font-weight:650;cursor:pointer}
 .auth-return-link{display:block;text-align:center;margin-top:18px;color:#285b45;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .auth-back:disabled{opacity:.6;cursor:wait}
+
+/* Conquistas semanais e celebrações sem culpa */
+.weekly-rewards{display:grid;gap:17px}
+.wellness-reward-hero{background:linear-gradient(120deg,#e6efcd,#eaf4e7);color:#173529}
+.wellness-reward-hero small{color:#567458}
+.wellness-reward-hero h2{color:#214b36;font-size:34px}
+.wellness-reward-hero p{max-width:590px;line-height:1.6;color:#56725e}
+.wellness-reward-hero>span{font-size:65px;line-height:1}
+.weekly-score{display:grid;gap:15px}
+.weekly-score-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.weekly-score-top small{font-size:10px;font-weight:800;color:#688272;letter-spacing:.09em}
+.weekly-score-top h3{margin:5px 0 0;color:#214b36;font-size:28px}
+.weekly-score-top h3 span{font-size:12px;color:#8b9d90;font-weight:500}
+.weekly-score-pill{padding:8px 11px;border-radius:999px;background:#e9f3e9;color:#285b45;font-size:11px;font-weight:700}
+.weekly-bar{height:11px;border-radius:50px;background:#e8eee7;overflow:hidden}
+.weekly-bar span{display:block;height:100%;border-radius:50px;background:linear-gradient(90deg,#3b8661,#a4c972);transition:width .2s ease}
+.weekly-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.weekly-day{border:1px solid #e2eae1;border-radius:12px;padding:11px 6px;min-width:0;display:grid;align-content:start;justify-items:center;gap:5px;background:#f9faf8;text-align:center}
+.weekly-day b{font-size:12px;color:#425e4d}
+.weekly-day small{font-size:10px;color:#84988b}
+.weekly-day>span{font-size:16px;font-weight:800;color:#65806c}
+.weekly-day em{font-style:normal;font-size:10px;font-weight:700;color:#286d49}
+.weekly-day.complete{background:#e9f6e9;border-color:#a9cfaf}
+.weekly-day.complete>span{color:#2d8152}
+.weekly-day.is-today{outline:2px solid #558a65;outline-offset:-2px}
+.weekly-score-foot,.weekly-balance-note,.weekly-coins-note{margin:0;color:#6b8172;font-size:12px;line-height:1.65}
+.wellness-milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.wellness-milestone{display:flex;flex-direction:column;gap:11px;min-width:0;background:#fff}
+.wellness-milestone.achieved{border-color:#8ec4a0;background:#f6fbf5}
+.milestone-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.milestone-icon{font-size:29px}
+.milestone-tag{font-size:10px;font-weight:750;color:#657d69;background:#edf2eb;border-radius:999px;padding:7px 8px;text-align:center}
+.wellness-milestone.achieved .milestone-tag{background:#dcefe0;color:#236e40}
+.wellness-milestone h3{color:#1b4931;font-size:18px;margin:0}
+.wellness-milestone p{font-size:12px;line-height:1.5;color:#788c7e;margin:0}
+.milestone-example{background:#f0f5ee;padding:12px;border-radius:11px;color:#2a5840;font-size:12px;font-weight:700;line-height:1.55}
+.milestone-meta{font-size:10px;color:#849389;margin-top:auto}
+.weekly-balance-note{padding:14px 16px;border:1px solid #dfe9db;border-radius:13px;background:#f3f8ef}
+.weekly-coins-note{margin-top:-10px}
+@media(max-width:960px){
+ .wellness-milestones{grid-template-columns:1fr}
+ .wellness-milestone{gap:8px}
+}
+@media(max-width:600px){
+ .wellness-reward-hero{padding:23px}
+ .wellness-reward-hero>span{display:none}
+ .wellness-reward-hero h2{font-size:27px}
+ .weekly-score{padding:14px}
+ .weekly-score-top h3{font-size:24px}
+ .weekly-score-pill{font-size:10px}
+ .weekly-days{gap:3px}
+ .weekly-day{padding:9px 1px;border-radius:8px;gap:4px}
+ .weekly-day b{font-size:10px}
+ .weekly-day small{font-size:9px}
+ .weekly-day>span{font-size:11px}
+ .weekly-day em{font-size:8px}
+}
+
+/* Public, account-free demonstration for mobile */
+.rewards-demo-shell{width:min(100%,1060px);margin:0 auto;min-height:100vh;padding:26px 19px 55px;display:grid;align-content:start;gap:21px;color:#173529}
+.rewards-demo-intro{padding:29px;border-radius:22px;background:linear-gradient(125deg,#e6f0df,#f7f9ed);border:1px solid #d6e6d4}
+.rewards-demo-label{font-size:11px;font-weight:850;letter-spacing:.12em;color:#3f7455}
+.rewards-demo-intro h1{margin:9px 0 6px;font-size:32px;color:#16442f}
+.rewards-demo-intro>p{font-size:14px;line-height:1.7;color:#4e725d;max-width:680px}
+.rewards-demo-notice{padding:11px 14px;background:#eff6ed;border:1px solid #cadec9;border-radius:12px;color:#45674f;font-size:12px;line-height:1.55;margin:0}
+.rewards-demo-controls{background:#fff;border:1px solid #dbe7dc;border-radius:19px;padding:20px;display:grid;gap:13px}
+.rewards-demo-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.rewards-demo-head small{font-size:10px;color:#738d78;letter-spacing:.09em;font-weight:800}
+.rewards-demo-head h2{font-size:20px;margin:4px 0;color:#1d4a34}
+.rewards-demo-head>button{background:#f1f7f0;border:1px solid #bad5be;border-radius:11px;padding:9px 13px;color:#2d6147;font-weight:750;cursor:pointer}
+.rewards-demo-controls>p{font-size:12px;color:#6c8473;line-height:1.55;margin:0}
+.rewards-demo-actions{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.rewards-demo-actions button{display:grid;justify-items:center;gap:6px;padding:13px 4px;border:1px solid #cbdccc;background:#f9fcf9;border-radius:12px;cursor:pointer;color:#41644d}
+.rewards-demo-actions button>span{font-size:12px;font-weight:700}
+.rewards-demo-actions button>b{font-size:19px}
+.rewards-demo-actions button>small{font-size:10px}
+.rewards-demo-actions button.is-selected{background:#dff0e2;border-color:#76b28b;color:#1e6743}
+.rewards-demo-week{background:#2b6949;border:0;color:white;border-radius:12px;padding:13px;font-weight:750;cursor:pointer}
+.rewards-demo-disclaimer{font-size:12px;line-height:1.65;color:#738678;padding:4px 5px}
+@media(max-width:600px){.rewards-demo-shell{padding:14px 10px 35px;gap:14px}.rewards-demo-intro{padding:22px 17px}.rewards-demo-intro h1{font-size:25px}.rewards-demo-controls{padding:15px}.rewards-demo-actions{gap:4px}.rewards-demo-actions button{padding:10px 1px;border-radius:8px}.rewards-demo-actions button>span{font-size:10px}.rewards-demo-actions button>small{font-size:9px}.rewards-demo-actions button>b{font-size:16px}}
+
+/* Automatic food ideas based on weekly consistency; no food is gated */
+.food-idea-section{display:grid;gap:17px;padding:23px;border:1px solid #d9e6db;border-radius:20px;background:linear-gradient(180deg,#fbfdf9,#f2f7f0)}
+.food-idea-intro{display:flex;align-items:start;justify-content:space-between;gap:14px}
+.food-idea-intro small{font-size:10px;letter-spacing:.1em;font-weight:800;color:#53815d}
+.food-idea-intro h2{margin:5px 0 8px;font-size:25px;color:#1f4b36;line-height:1.2}
+.food-idea-intro p{font-size:13px;color:#66806d;line-height:1.65;max-width:680px;margin:0}
+.food-idea-intro>span{font-size:42px;background:#e5f0df;border-radius:16px;min-width:64px;height:64px;display:grid;place-items:center}
+.food-idea-filter{display:flex;flex-wrap:wrap;gap:7px}
+.food-idea-filter button{background:white;border:1px solid #d1dfd2;border-radius:100px;color:#516a57;padding:9px 12px;font-weight:750;font-size:11px;cursor:pointer}
+.food-idea-filter button.selected{color:white;background:#2a6548;border-color:#2a6548}
+.food-idea-filter button:hover:not(.selected){background:#eaf4e9}
+.food-idea-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.food-idea-card{display:flex;flex-direction:column;gap:10px;background:white;border:1px solid #dfe8df;border-radius:16px;padding:17px;min-width:0;box-shadow:0 7px 19px #1d48320a}
+.food-idea-card-top{display:flex;align-items:start;justify-content:space-between;gap:8px}
+.food-idea-emoji{font-size:32px}
+.food-idea-category{font-size:10px;color:#54745e;background:#edf5eb;border-radius:99px;padding:6px 8px;text-align:center}
+.food-idea-card h3{font-size:17px;color:#1d4630;margin:0}
+.food-idea-card p{font-size:12px;line-height:1.55;color:#627c6a;margin:0}
+.food-idea-tip{font-size:11px;line-height:1.6;color:#416b4e;border-top:1px solid #edf2ec;margin-top:auto;padding-top:11px}
+.food-idea-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.food-idea-shuffle{border:1px solid #a9ccb1;background:#e4f1e4;color:#245f40;font-weight:800;font-size:12px;padding:11px 15px;border-radius:11px;cursor:pointer}
+.food-idea-shuffle:hover{background:#d8eadb}
+.food-idea-actions p{flex:1;min-width:180px;font-size:11px;line-height:1.55;color:#7d927f;margin:0}
+@media(max-width:800px){.food-idea-grid{grid-template-columns:1fr}.food-idea-card{gap:8px}.food-idea-intro>span{display:none}}
+@media(max-width:600px){.food-idea-section{padding:16px;gap:13px;border-radius:16px}.food-idea-intro h2{font-size:22px}.food-idea-filter button{padding:8px 10px}.food-idea-card{padding:15px}.food-idea-actions{align-items:stretch}.food-idea-shuffle{width:100%}}
