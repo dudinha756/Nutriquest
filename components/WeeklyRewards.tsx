@@ -1,6 +1,8 @@
 "use client";
 
+import {useState} from "react";
 import { type ActivityByDate, weeklySummary, localDateKey } from "../lib/weekly-rewards";
+import {type FoodCategory,foodCategories,foodSuggestions} from "../lib/food-suggestions";
 
 type Reward={id:number;name:string;cost:number};
 type Props={
@@ -18,8 +20,11 @@ const milestones=[
 ] as const;
 
 export default function WeeklyRewards({activity,today,coins,rewards,onAddReward,onRedeem}:Props){
+ const [foodCategory,setFoodCategory]=useState<FoodCategory>("Todas");
+ const [suggestionPage,setSuggestionPage]=useState(0);
  const todayDate=new Date(today+"T12:00:00");
  const summary=weeklySummary(activity,Number.isNaN(todayDate.getTime())?new Date():todayDate);
+ const suggestions=foodSuggestions(foodCategory,summary.consistentDays,suggestionPage);
  return <div className="weekly-rewards">
   <div className="rewardhero wellness-reward-hero">
    <div><small>CONQUISTAS DA SEMANA</small><h2>{summary.consistentDays} de 7 dias</h2><p>Cada dia com pelo menos 80% das refeições planejadas registradas conta para suas conquistas.</p></div>
@@ -47,7 +52,31 @@ export default function WeeklyRewards({activity,today,coins,rewards,onAddReward,
     <div className="milestone-meta">{m.points} pontos simbólicos • {m.days} dias consistentes</div>
    </article>;
   })}</div>
-  <p className="weekly-balance-note">Uma refeição diferente do planejado não apaga o que você construiu. Quantidades, incluindo o exemplo de sushi, são escolhas pessoais — não metas ou recomendações nutricionais.</p>
+  <section className="food-idea-section" aria-labelledby="food-ideas-heading">
+   <div className="food-idea-intro">
+    <div><small>IDEIAS DO NUTRIQUEST</small><h2 id="food-ideas-heading">O que você gostaria de comer?</h2>
+     <p>{summary.consistentDays===0?"Para começar, separamos algumas sugestões para aproveitar quando você quiser.":`Com ${summary.consistentDays} ${summary.consistentDays===1?"dia consistente":"dias consistentes"} na semana, selecionamos ideias para combinar com seu momento.`} Você pode escolher qualquer uma, independentemente da pontuação.</p></div>
+    <span aria-hidden="true">🍽️</span>
+   </div>
+   <div className="food-idea-filter" role="group" aria-label="Preferência de comida">
+    {foodCategories.map(category=><button type="button" key={category} aria-pressed={foodCategory===category}
+     className={foodCategory===category?"selected":""}
+     onClick={()=>{setFoodCategory(category);setSuggestionPage(0);}}>{category}</button>)}
+   </div>
+   <div className="food-idea-grid">
+    {suggestions.map((idea,index)=><article className="food-idea-card" key={idea.id}>
+     <div className="food-idea-card-top"><span className="food-idea-emoji" aria-hidden="true">{idea.icon}</span>
+      <span className="food-idea-category">{idea.category}</span></div>
+     <h3>{idea.title}</h3><p>{idea.description}</p>
+     <div className="food-idea-tip">{index===0&&foodCategory==="Todas"?"Sugestão da semana: ":""}{idea.note}</div>
+    </article>)}
+   </div>
+   <div className="food-idea-actions">
+    <button type="button" className="food-idea-shuffle" onClick={()=>setSuggestionPage(page=>page+1)}>↻ Ver outras sugestões</button>
+    <p>As sugestões são para inspiração, não uma prescrição nutricional ou uma quantidade de comida permitida.</p>
+   </div>
+  </section>
+  <p className="weekly-balance-note">Uma refeição diferente do planejado não apaga o que você construiu. Comer algo de que gosta não exige pontos, compensações ou culpa.</p>
   <div className="intro horizontal"><div><small>PERSONALIZE SUA MOTIVAÇÃO</small><h2>Recompensas pessoais</h2>
    <p>As NutriCoins e as recompensas que você já cadastrou continuam disponíveis.</p></div>
    <button className="primary" onClick={onAddReward}>+ Nova recompensa</button>
